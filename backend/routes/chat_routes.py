@@ -216,3 +216,44 @@ async def get_chat_history_handler(
 ) -> list[ChatHistory]:
     # TODO: RBAC with current_user
     return get_chat_history(chat_id)
+
+@chat_router.post("/chatbot")
+async def chatbot_handler(
+    request: Request,
+    chat_question: ChatQuestion
+):
+    try:
+        current_user_email = 'test@example.com'
+        chat_id = "2e074744-cefb-41e9-875b-b926d75dbd44"
+        user_openai_api_key = request.headers.get("Openai-Api-Key")
+        model = chat_question.model or "gpt-4-0613"
+        temperature = chat_question.temperature or 0
+        max_tokens = chat_question.max_tokens or 1000
+        openai_function_compatible_models = [
+            "gpt-3.5-turbo-0613",
+            "gpt-4-0613",
+        ]
+        if chat_question.model in openai_function_compatible_models:
+            gpt_answer_generator = BrainPickingOpenAIFunctions(
+                model=model,
+                chat_id=chat_id,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                user_email=current_user_email,
+                user_openai_api_key=user_openai_api_key,
+            )
+            answer = gpt_answer_generator.generate_answer(chat_question.question)
+        else:
+            brainPicking = BrainPicking(
+                chat_id=chat_id,
+                model=model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                user_id=current_user_email,
+                user_openai_api_key=user_openai_api_key,
+            )
+            answer = brainPicking.generate_answer(chat_question.question)
+
+        return {'user_message': chat_question.question, 'assistant': answer}
+    except HTTPException as e:
+        raise e

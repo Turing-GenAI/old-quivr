@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from langchain.chat_models import ChatOpenAI
 from llm.brainpicking import BrainPicking
+from llm.prompt.SYSTEM_PROMPT import SYSTEM_PROMPT
 from logger import get_logger
 from repository.chat.get_chat_history import get_chat_history
 from vectorstore.supabase import CustomSupabaseVectorStore
@@ -101,7 +102,7 @@ class BrainPickingOpenAIFunctions(BrainPicking):
         system_messages = [
             {
                 "role": "system",
-                "content": "Your name is Quivr. You are a second brain. A person will ask you a question and you will provide a helpful answer. Write the answer in the same language as the question.If you don't know the answer, just say that you don't know. Don't try to make up an answer.our main goal is to answer questions about user uploaded documents. Unless basic questions or greetings, you should always refer to user uploaded documents by fetching them with the get_context function.",
+                "content": SYSTEM_PROMPT,
             }
         ]
 
@@ -130,20 +131,10 @@ class BrainPickingOpenAIFunctions(BrainPicking):
         logger.info("Getting answer")
         functions = [
             {
-                "name": "get_history",
-                "description": "Used to get the chat history between the user and the assistant",
-                "parameters": {"type": "object", "properties": {}},
-            },
-            {
                 "name": "get_context",
                 "description": "Used for retrieving documents related to the question to help answer the question",
                 "parameters": {"type": "object", "properties": {}},
-            },
-            {
-                "name": "get_history_and_context",
-                "description": "Used for retrieving documents related to the question to help answer the question and the previous chat history",
-                "parameters": {"type": "object", "properties": {}},
-            },
+            }
         ]
 
         # First, try to get an answer using just the question
@@ -152,20 +143,7 @@ class BrainPickingOpenAIFunctions(BrainPicking):
         )
         formatted_response = format_answer(response)
 
-        # If the model calls for history, try again with history included
-        if (
-            formatted_response.function_call
-            and formatted_response.function_call.name == "get_history"
-        ):
-            logger.info("Model called for history")
-            response = self._get_model_response(
-                messages=self._construct_prompt(question, useHistory=True),
-                functions=[],
-            )
-
-            formatted_response = format_answer(response)
-
-        # If the model calls for context, try again with context included
+        # # If the model calls for context, try again with context included
         if (
             formatted_response.function_call
             and formatted_response.function_call.name == "get_context"
@@ -174,19 +152,6 @@ class BrainPickingOpenAIFunctions(BrainPicking):
             response = self._get_model_response(
                 messages=self._construct_prompt(
                     question, useContext=True, useHistory=False
-                ),
-                functions=[],
-            )
-            formatted_response = format_answer(response)
-
-        if (
-            formatted_response.function_call
-            and formatted_response.function_call.name == "get_history_and_context"
-        ):
-            logger.info("Model called for history and context")
-            response = self._get_model_response(
-                messages=self._construct_prompt(
-                    question, useContext=True, useHistory=True
                 ),
                 functions=[],
             )
