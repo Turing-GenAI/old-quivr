@@ -1,9 +1,7 @@
 # from stats import add_usage
-import asyncio
 import os
 import tempfile
 import time
-from typing import Optional
 
 from fastapi import UploadFile
 from langchain.schema import Document
@@ -40,8 +38,8 @@ async def process_file(
         file_sha1 = compute_sha1_from_file(tmp_file.name)
 
     os.remove(tmp_file.name)
-    chunk_size = 500
-    chunk_overlap = 0
+    chunk_size = 5000
+    chunk_overlap = 50
 
     text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
         chunk_size=chunk_size, chunk_overlap=chunk_overlap
