@@ -38,7 +38,7 @@ pipeline {
                             ]
                         ],
                         submoduleCfg: [],
-                        userRemoteConfigs: [[credentialsId: "a3445fa2-3736-4c7b-bdb8-7ffd7fedf257", url: "git@github.com:TuringEnterprises/magic-lens.git"]]
+                        userRemoteConfigs: [[credentialsId: "a3445fa2-3736-4c7b-bdb8-7ffd7fedf257", url: "git@github.com:TuringEnterprises/quivr.git"]]
                     ])
                 }
             }
