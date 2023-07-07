@@ -68,8 +68,8 @@ pipeline {
             }
             steps {
                 script {
-                    deployQuirv.applyHelmToKube("magic-lens","backend", BRANCH, BUILD_NUMBER)
-                    deployQuirv.applyHelmToKube("magic-lens","frontend", BRANCH, BUILD_NUMBER)
+                    deployQuirv.applyHelmToKube("quirv","backend", BRANCH, BUILD_NUMBER)
+                    deployQuirv.applyHelmToKube("quirv","frontend", BRANCH, BUILD_NUMBER)
                 }
             }
         }
