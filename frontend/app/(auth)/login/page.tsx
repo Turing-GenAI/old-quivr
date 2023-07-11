@@ -47,7 +47,7 @@ export default function Login() {
 
   if (session?.user !== undefined) {
     void track("SIGNED_IN");
-    redirect("/upload");
+    redirect("/chat");
   }
 
   return (
