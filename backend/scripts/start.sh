@@ -18,4 +18,5 @@ fi
 cd /code
 
 # Start your app
+export $(cat .env)
 uvicorn main:app --reload --host 0.0.0.0 --port 5050
