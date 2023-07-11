@@ -21,7 +21,7 @@ RUN yarn install
 
 # Copy the rest of our Next.js folder into /app
 COPY . .
-RUN export $(cat .env)
+
 # Build the Next.js application
 RUN yarn build
 
