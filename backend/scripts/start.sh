@@ -17,6 +17,8 @@ fi
 # Move to the code directory
 cd /code
 
-# Start your app
-export $(cat .env)
+set -a
+source .env
+set +a
+
 uvicorn main:app --reload --host 0.0.0.0 --port 5050
