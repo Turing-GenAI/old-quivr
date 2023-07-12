@@ -254,6 +254,11 @@ async def chatbot_handler(
             )
             answer = brainPicking.generate_answer(chat_question.question)
 
-        return {'user_message': chat_question.question, 'assistant': answer}
+        chat_answer = update_chat_history(
+            chat_id=chat_id,
+            user_message=chat_question.question,
+            assistant_answer=answer,
+        )
+        return {'user_message': chat_answer["user_message"], 'assistant': chat_answer["assistant"]}
     except HTTPException as e:
         raise e
