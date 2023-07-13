@@ -5,9 +5,8 @@ from uuid import UUID
 from auth.auth_bearer import AuthBearer, get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Request
 from llm.brainpicking import BrainPicking
-from llm.BrainPickingOpenAIFunctions.BrainPickingOpenAIFunctions import (
-    BrainPickingOpenAIFunctions,
-)
+from llm.BrainPickingOpenAIFunctions.BrainPickingOpenAIFunctions import \
+    BrainPickingOpenAIFunctions
 from llm.PrivateBrainPicking import PrivateBrainPicking
 from models.chat import Chat, ChatHistory
 from models.chats import ChatQuestion
@@ -19,7 +18,8 @@ from repository.chat.get_chat_history import get_chat_history
 from repository.chat.get_user_chats import get_user_chats
 from repository.chat.update_chat import ChatUpdatableProperties, update_chat
 from repository.chat.update_chat_history import update_chat_history
-from utils.users import fetch_user_id_from_credentials, update_user_request_count
+from utils.users import (fetch_user_id_from_credentials,
+                         update_user_request_count)
 
 chat_router = APIRouter()
 
@@ -160,8 +160,8 @@ async def create_question_handler(
         check_user_limit(current_user.email, user_openai_api_key)
         llm_settings = LLMSettings()
         openai_function_compatible_models = [
-            "gpt-3.5-turbo-0613",
-            "gpt-4-0613",
+            "gpt-3.5-turbo",
+            "gpt-4",
         ]
         if llm_settings.private:
             gpt_answer_generator = PrivateBrainPicking(
@@ -226,12 +226,12 @@ async def chatbot_handler(
         current_user_email = 'test@example.com'
         chat_id = "2e074744-cefb-41e9-875b-b926d75dbd44"
         user_openai_api_key = request.headers.get("Openai-Api-Key")
-        model = chat_question.model or "gpt-4-0613"
+        model = chat_question.model or "gpt-4"
         temperature = chat_question.temperature or 0
         max_tokens = chat_question.max_tokens or 1000
         openai_function_compatible_models = [
-            "gpt-3.5-turbo-0613",
-            "gpt-4-0613",
+            "gpt-3.5-turbo",
+            "gpt-4",
         ]
         if chat_question.model in openai_function_compatible_models:
             gpt_answer_generator = BrainPickingOpenAIFunctions(
