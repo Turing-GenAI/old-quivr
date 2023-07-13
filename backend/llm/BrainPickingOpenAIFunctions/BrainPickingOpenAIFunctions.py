@@ -13,9 +13,9 @@ logger = get_logger(__name__)
 
 
 class BrainPickingOpenAIFunctions(BrainPicking):
-    DEFAULT_MODEL = "gpt-3.5-turbo"
+    DEFAULT_MODEL = "gpt-4"
     DEFAULT_TEMPERATURE = 0.0
-    DEFAULT_MAX_TOKENS = 4096
+    DEFAULT_MAX_TOKENS = 2048
 
     openai_client: ChatOpenAI = None
     user_email: str = None
