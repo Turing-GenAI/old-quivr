@@ -8,8 +8,9 @@ from llm.brainpicking import BrainPicking
 from llm.BrainPickingOpenAIFunctions.BrainPickingOpenAIFunctions import \
     BrainPickingOpenAIFunctions
 from llm.PrivateBrainPicking import PrivateBrainPicking
+from llm.prompt.SYSTEM_PROMPT import SYSTEM_PROMPT
 from models.chat import Chat, ChatHistory
-from models.chats import ChatQuestion
+from models.chats import ChatQuestion, ChatQuestionWithHistory
 from models.settings import LLMSettings, common_dependencies
 from models.users import User
 from repository.chat.create_chat import CreateChatProperties, create_chat
@@ -220,39 +221,66 @@ async def get_chat_history_handler(
 @chat_router.post("/chatbot")
 async def chatbot_handler(
     request: Request,
-    chat_question: ChatQuestion
+    chat_question: ChatQuestionWithHistory
 ):
     try:
         current_user_email = 'test@example.com'
         chat_id = "2e074744-cefb-41e9-875b-b926d75dbd44"
-        user_openai_api_key = request.headers.get("Openai-Api-Key")
-        model = chat_question.model or "gpt-4"
-        temperature = chat_question.temperature or 0
-        max_tokens = chat_question.max_tokens or 1000
-        openai_function_compatible_models = [
-            "gpt-3.5-turbo",
-            "gpt-4",
-        ]
-        if chat_question.model in openai_function_compatible_models:
-            gpt_answer_generator = BrainPickingOpenAIFunctions(
-                model=model,
-                chat_id=chat_id,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                user_email=current_user_email,
-                user_openai_api_key=user_openai_api_key,
-            )
-            answer = gpt_answer_generator.generate_answer(chat_question.question)
+        user_openai_api_key = request.headers.get("Openai-Api-Key") or os.getenv("OPENAI_API_KEY")
+        model = "gpt-4"
+        temperature = 0
+        max_tokens = 1000
+        systemPrompt = SYSTEM_PROMPT
+        chat_question.history = [message.dict() for message in chat_question.history]
+
+        # change this to false to consider brain picking
+        direct_openai_call = True
+
+        if direct_openai_call and chat_question.history != []:
+            import requests
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {user_openai_api_key}'
+            }
+            data = {
+                "model": model,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": systemPrompt,
+                    }
+                ] + chat_question.history,
+                "temperature": temperature,
+                "stream": False,
+            }
+            response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
+            answer = response.json().get('choices')[0].get('message').get('content').strip()
+
         else:
-            brainPicking = BrainPicking(
-                chat_id=chat_id,
-                model=model,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                user_id=current_user_email,
-                user_openai_api_key=user_openai_api_key,
-            )
-            answer = brainPicking.generate_answer(chat_question.question)
+            openai_function_compatible_models = [
+                "gpt-3.5-turbo",
+                "gpt-4",
+            ]
+            if model in openai_function_compatible_models:
+                gpt_answer_generator = BrainPickingOpenAIFunctions(
+                    model=model,
+                    chat_id=chat_id,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    user_email=current_user_email,
+                    user_openai_api_key=user_openai_api_key,
+                )
+                answer = gpt_answer_generator.generate_answer(chat_question.question)
+            else:
+                brainPicking = BrainPicking(
+                    chat_id=chat_id,
+                    model=model,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    user_id=current_user_email,
+                    user_openai_api_key=user_openai_api_key,
+                )
+                answer = brainPicking.generate_answer(chat_question.question)
 
         chat_answer = update_chat_history(
             chat_id=chat_id,

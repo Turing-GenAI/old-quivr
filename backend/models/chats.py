@@ -21,3 +21,14 @@ class ChatQuestion(BaseModel):
     question: str
     temperature: float = 0.0
     max_tokens: int = 256
+
+class Message(BaseModel):
+    role: str
+    content: str
+
+class ChatQuestionWithHistory(BaseModel):
+    model: str = "gpt-3.5-turbo"
+    question: str
+    temperature: float = 0.0
+    max_tokens: int = 256
+    history: List[Message] = []
