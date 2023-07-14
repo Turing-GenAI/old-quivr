@@ -32,3 +32,4 @@ class ChatQuestionWithHistory(BaseModel):
     temperature: float = 0.0
     max_tokens: int = 256
     history: List[Message] = []
+    chat_id: Optional[UUID] = None

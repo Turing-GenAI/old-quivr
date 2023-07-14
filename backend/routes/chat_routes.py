@@ -1,6 +1,7 @@
 import os
 import time
 from uuid import UUID
+import uuid
 
 from auth.auth_bearer import AuthBearer, get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -225,7 +226,8 @@ async def chatbot_handler(
 ):
     try:
         current_user_email = 'test@example.com'
-        chat_id = "2e074744-cefb-41e9-875b-b926d75dbd44"
+        # get chat_id from request or generate new uuid
+        chat_id = chat_question.chat_id or uuid.uuid4()
         user_openai_api_key = request.headers.get("Openai-Api-Key") or os.getenv("OPENAI_API_KEY")
         model = "gpt-4"
         temperature = 0
@@ -287,6 +289,6 @@ async def chatbot_handler(
             user_message=chat_question.question,
             assistant_answer=answer,
         )
-        return {'user_message': chat_answer["user_message"], 'assistant': chat_answer["assistant"]}
+        return {'user_message': chat_answer["user_message"], 'assistant': chat_answer["assistant"], 'chat_id': chat_id}
     except HTTPException as e:
         raise e
