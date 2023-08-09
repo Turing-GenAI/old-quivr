@@ -237,7 +237,7 @@ async def chatbot_handler(
 
         # change this to false to consider brain picking
         direct_openai_call = True
-
+        usage = 0
         if direct_openai_call and chat_question.history != []:
             import requests
             headers = {
@@ -257,7 +257,7 @@ async def chatbot_handler(
             }
             response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
             answer = response.json().get('choices')[0].get('message').get('content').strip()
-
+            usage = response.json().get('usage').get('total_tokens')
         else:
             openai_function_compatible_models = [
                 "gpt-3.5-turbo",
@@ -289,6 +289,6 @@ async def chatbot_handler(
             user_message=chat_question.question,
             assistant_answer=answer,
         )
-        return {'user_message': chat_answer["user_message"], 'assistant': chat_answer["assistant"], 'chat_id': chat_id}
+        return {'user_message': chat_answer["user_message"], 'assistant': chat_answer["assistant"], 'chat_id': chat_id, 'usage': usage}
     except HTTPException as e:
         raise e
